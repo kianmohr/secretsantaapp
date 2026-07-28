@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173f35">
+  <meta name="description" content="A private online Secret Santa draw for families.">
+  <title>Mohr-ry Match — Secret Santa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,700;9..144,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="snow" aria-hidden="true"></div>
+  <header class="site-header">
+    <a class="brand" href="./"><span class="brand-mark">✦</span><span>Mohr-ry Match</span></a>
+    <button class="text-button hidden" id="home-button" type="button">Create another</button>
+  </header>
+
+  <main>
+    <section class="screen active" id="setup-screen">
+      <div class="hero-copy">
+        <p class="eyebrow">Secret Santa, from anywhere</p>
+        <h1>A little mystery.<br><em>A lot of merry.</em></h1>
+        <p class="intro">Create one link for the family. Everyone joins privately, adds four gift preferences, and reveals their match after the draw.</p>
+      </div>
+
+      <div class="paper-card setup-card">
+        <div class="card-heading">
+          <div><p class="step-label">Organizer setup</p><h2>Who’s joining?</h2></div>
+          <span class="count-badge"><strong id="name-count">0</strong> people</span>
+        </div>
+
+        <form class="name-form" id="name-form">
+          <label class="sr-only" for="name-input">Participant name</label>
+          <input id="name-input" maxlength="40" autocomplete="off" placeholder="Type a name…" required>
+          <button class="add-button" type="submit">Add <span>＋</span></button>
+        </form>
+        <div class="empty-state" id="empty-state">
+          <span>🎁</span><p>Your nice list is waiting.</p><small>Add at least 3 people.</small>
+        </div>
+        <ul class="name-list" id="name-list"></ul>
+
+        <div class="rules-section hidden" id="rules-section">
+          <div class="rules-heading">
+            <div><p class="step-label">Optional rules</p><h3>Keep couples apart</h3></div>
+            <span>💔</span>
+          </div>
+          <p class="rules-copy">Add any pair who must not draw each other.</p>
+          <form class="couple-form" id="couple-form">
+            <select id="couple-one" aria-label="First person"></select>
+            <span class="couple-divider">&</span>
+            <select id="couple-two" aria-label="Second person"></select>
+            <button class="secondary-button" type="submit">Add rule</button>
+          </form>
+          <ul class="couple-list" id="couple-list"></ul>
+        </div>
+
+        <div class="event-details">
+          <label for="event-name">Event name</label>
+          <input id="event-name" maxlength="60" value="Family Secret Santa">
+        </div>
+        <div class="setup-footer">
+          <p id="setup-hint">Add at least 3 people</p>
+          <button class="primary-button" id="create-button" type="button" disabled>Create the event <span>→</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="admin-screen">
+      <div class="compact-heading">
+        <p class="eyebrow">Organizer dashboard</p>
+        <h1 id="admin-title">Family Secret Santa</h1>
+        <p>You can track who has joined, but this dashboard will never display the assignments.</p>
+      </div>
+      <div class="paper-card dashboard-card">
+        <div class="share-panel">
+          <div>
+            <p class="step-label">Share this with everyone</p>
+            <h2>One family link</h2>
+          </div>
+          <div class="share-link-row">
+            <input id="join-link" readonly aria-label="Participant join link">
+            <button class="primary-button" id="copy-link-button" type="button">Copy link</button>
+          </div>
+          <p class="tiny-note">Keep this organizer dashboard URL bookmarked. Its private token is the only way to start the draw.</p>
+        </div>
+        <div class="progress-row"><span>Joined</span><strong><span id="claimed-count">0</span> / <span id="admin-total">0</span></strong></div>
+        <div class="progress-track"><div class="progress-fill" id="claim-progress"></div></div>
+        <div class="status-list" id="admin-status-list"></div>
+        <p class="tiny-note opt-out-note">Someone dropped out? Exclude them before the draw. You can restore them while the event is still waiting.</p>
+        <button class="primary-button draw-now-button" id="draw-now-button" type="button" disabled>Draw the names <span>✦</span></button>
+        <p class="draw-note" id="draw-note">Everyone must join before the draw.</p>
+        <div class="danger-zone">
+          <div>
+            <strong>Reset this event</strong>
+            <p>Keep the roster and family link, but erase all joins, preferences, photos, opt-outs and assignments.</p>
+          </div>
+          <button class="danger-outline-button" id="reset-event-button" type="button">Reset event</button>
+        </div>
+        <div class="danger-zone">
+          <div>
+            <strong>Delete this event permanently</strong>
+            <p>Remove the event, roster, profiles, photos and assignments. Its organizer and family links will stop working.</p>
+          </div>
+          <button class="danger-outline-button" id="delete-event-button" type="button">Delete event</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="join-screen">
+      <div class="compact-heading">
+        <p class="eyebrow">You’ve been invited</p>
+        <h1 id="join-title">Secret Santa</h1>
+        <p>Choose only your own name. You’ll create a PIN that keeps your result private.</p>
+      </div>
+      <div class="paper-card join-card">
+        <div id="claim-panel">
+          <p class="step-label">Step 1</p>
+          <h2>Which one is you?</h2>
+          <div class="claim-grid" id="claim-grid"></div>
+        </div>
+        <form class="hidden" id="profile-form">
+          <button class="mini-back" id="back-to-names" type="button">← Choose a different name</button>
+          <p class="step-label">Your private profile</p>
+          <h2>Hi, <span id="profile-name"></span>!</h2>
+          <label for="pin-input">Create a private PIN or passphrase</label>
+          <input id="pin-input" type="password" minlength="6" maxlength="80" autocomplete="new-password" placeholder="At least 6 characters" required>
+          <fieldset class="preferences-fieldset">
+            <legend>Gift preferences <span>(optional)</span></legend>
+            <p>Add up to four ideas. Each preference can have its own optional reference photo.</p>
+            <label for="preference-1">Preference 1</label><input id="preference-1" maxlength="120" placeholder="e.g. Mystery novels">
+            <input class="photo-input claim-photo-input" id="wish-photo-1" data-photo-index="0" type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="Reference photo for preference 1">
+            <div class="photo-preview hidden" id="claim-photo-preview-1"><img alt="Reference for preference 1"><button class="remove-photo-button claim-remove-photo" data-photo-index="0" type="button">Remove photo</button></div>
+            <label for="preference-2">Preference 2</label><input id="preference-2" maxlength="120" placeholder="e.g. Dark chocolate">
+            <input class="photo-input claim-photo-input" id="wish-photo-2" data-photo-index="1" type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="Reference photo for preference 2">
+            <div class="photo-preview hidden" id="claim-photo-preview-2"><img alt="Reference for preference 2"><button class="remove-photo-button claim-remove-photo" data-photo-index="1" type="button">Remove photo</button></div>
+            <label for="preference-3">Preference 3</label><input id="preference-3" maxlength="120" placeholder="e.g. Gardening things">
+            <input class="photo-input claim-photo-input" id="wish-photo-3" data-photo-index="2" type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="Reference photo for preference 3">
+            <div class="photo-preview hidden" id="claim-photo-preview-3"><img alt="Reference for preference 3"><button class="remove-photo-button claim-remove-photo" data-photo-index="2" type="button">Remove photo</button></div>
+            <label for="preference-4">Preference 4</label><input id="preference-4" maxlength="120" placeholder="e.g. Blue, size M">
+            <input class="photo-input claim-photo-input" id="wish-photo-4" data-photo-index="3" type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="Reference photo for preference 4">
+            <div class="photo-preview hidden" id="claim-photo-preview-4"><img alt="Reference for preference 4"><button class="remove-photo-button claim-remove-photo" data-photo-index="3" type="button">Remove photo</button></div>
+            <small class="photo-help">Photos: JPG, PNG, WebP or GIF. Maximum 1 MB each.</small>
+          </fieldset>
+          <button class="primary-button full-button" type="submit">Save my private profile <span>→</span></button>
+        </form>
+        <div class="login-panel">
+          <div class="login-prompt-icon" aria-hidden="true">🔑</div>
+          <div class="login-prompt-copy">
+            <h3>Already joined before?</h3>
+            <p>Use your PIN to open your private Secret Santa page.</p>
+          </div>
+          <button class="login-button" id="show-login-button" type="button">Log in with my PIN <span>→</span></button>
+        </div>
+        <form class="hidden login-form" id="login-form">
+          <div class="login-form-heading">
+            <span aria-hidden="true">🔑</span>
+            <div><p class="step-label">Returning participant</p><h2>Log in with your PIN</h2></div>
+          </div>
+          <label for="login-name">Step 1: Choose your name</label>
+          <select id="login-name"></select>
+          <label for="login-pin">Step 2: Enter the PIN you created</label>
+          <input id="login-pin" type="password" autocomplete="current-password" placeholder="Enter your private PIN" required>
+          <button class="primary-button full-button large-action-button" type="submit">Open my Secret Santa page <span>→</span></button>
+          <button class="cancel-login-button" id="cancel-login-button" type="button">← Go back to the name list</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="screen" id="participant-screen">
+      <div class="compact-heading">
+        <p class="eyebrow">Your private Secret Santa page</p>
+        <h1>Hi, <span id="participant-name"></span>.</h1>
+      </div>
+      <div class="paper-card participant-card">
+        <div class="waiting-view" id="waiting-view">
+          <div class="waiting-icon">⏳</div>
+          <h2>You’re all checked in</h2>
+          <p>The organizer will draw names once everyone has joined. Come back to this link later—this device will remember you.</p>
+          <button class="secondary-button" id="refresh-button" type="button">Check for the draw</button>
+        </div>
+        <div class="hidden waiting-view" id="opted-out-view">
+          <div class="waiting-icon">👋</div>
+          <h2>You’ve been excluded from this draw</h2>
+          <p>The organizer marked you as opted out, so you won’t give or receive a Secret Santa name. If that was a mistake, ask them to restore you before the draw.</p>
+        </div>
+        <div class="hidden result-view" id="result-view">
+          <p class="step-label">You’re giving a gift to</p>
+          <h2 class="recipient-name" id="recipient-name"></h2>
+          <div class="preference-box">
+            <h3>Their gift preferences</h3>
+            <ol class="recipient-preference-list" id="recipient-preferences"></ol>
+            <p class="no-preferences hidden" id="no-recipient-preferences">They didn’t add any written preferences.</p>
+          </div>
+          <p class="secret-note">Keep it secret! 🤫</p>
+        </div>
+        <form class="edit-preferences" id="edit-preferences-form">
+          <details>
+            <summary>Edit my gift preferences</summary>
+            <div class="details-fields">
+              <label>Preference 1</label><input class="edit-preference" maxlength="120" placeholder="Preference 1">
+              <input class="photo-input edit-photo-input" data-photo-index="0" type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="Replace photo for preference 1">
+              <div class="photo-preview hidden edit-photo-preview"><img alt="Reference for preference 1"><button class="remove-photo-button edit-remove-photo" data-photo-index="0" type="button">Remove photo</button></div>
+              <label>Preference 2</label><input class="edit-preference" maxlength="120" placeholder="Preference 2">
+              <input class="photo-input edit-photo-input" data-photo-index="1" type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="Replace photo for preference 2">
+              <div class="photo-preview hidden edit-photo-preview"><img alt="Reference for preference 2"><button class="remove-photo-button edit-remove-photo" data-photo-index="1" type="button">Remove photo</button></div>
+              <label>Preference 3</label><input class="edit-preference" maxlength="120" placeholder="Preference 3">
+              <input class="photo-input edit-photo-input" data-photo-index="2" type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="Replace photo for preference 3">
+              <div class="photo-preview hidden edit-photo-preview"><img alt="Reference for preference 3"><button class="remove-photo-button edit-remove-photo" data-photo-index="2" type="button">Remove photo</button></div>
+              <label>Preference 4</label><input class="edit-preference" maxlength="120" placeholder="Preference 4">
+              <input class="photo-input edit-photo-input" data-photo-index="3" type="file" accept="image/jpeg,image/png,image/webp,image/gif" aria-label="Replace photo for preference 4">
+              <div class="photo-preview hidden edit-photo-preview"><img alt="Reference for preference 4"><button class="remove-photo-button edit-remove-photo" data-photo-index="3" type="button">Remove photo</button></div>
+              <small class="photo-help">Leave a photo field empty to keep its current image.</small>
+              <button class="secondary-button" type="submit">Save changes</button>
+            </div>
+          </details>
+        </form>
+      </div>
+    </section>
+
+    <section class="screen" id="error-screen">
+      <div class="completion paper-card">
+        <div class="celebration-icon">!</div>
+        <h1>That link isn’t working</h1>
+        <p id="error-message">Ask the organizer for the current family link.</p>
+        <a class="primary-button button-link" href="./">Create a new event</a>
+      </div>
+    </section>
+
+    <section class="maintenance-panel paper-card hidden" id="maintenance-panel">
+      <details>
+        <summary>Site data maintenance</summary>
+        <div class="maintenance-content">
+          <p class="step-label">Deployment owner only</p>
+          <h2>Clear all saved events</h2>
+          <p>This permanently deletes every event, participant profile, uploaded photo, session and assignment stored by this deployment.</p>
+          <label for="cleanup-key">Cleanup passphrase</label>
+          <input id="cleanup-key" type="password" autocomplete="current-password" placeholder="Configured in Netlify">
+          <label for="clear-all-confirmation">Type <strong>CLEAR ALL EVENTS</strong></label>
+          <input id="clear-all-confirmation" autocomplete="off" placeholder="CLEAR ALL EVENTS">
+          <button class="danger-button" id="clear-all-button" type="button" disabled>Clear all events</button>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2026 &middot; Built by <a class="footer-link" href="https://launchpilotdigital.com" target="_blank" rel="noopener">LaunchPilotDigital</a></p>
+  </footer>
+
+  <dialog id="reset-dialog">
+    <div class="dialog-icon">↻</div>
+    <h2>Reset the whole event?</h2>
+    <p>Everyone will need to claim their name again. PINs, preferences, photos, opt-outs and any existing draw will be permanently erased.</p>
+    <label class="confirm-label" for="reset-confirmation">Type <strong>RESET</strong> to confirm</label>
+    <input id="reset-confirmation" autocomplete="off" placeholder="RESET">
+    <div class="dialog-actions">
+      <button class="secondary-button" id="cancel-reset-button" type="button">Keep the event</button>
+      <button class="danger-button" id="confirm-reset-button" type="button" disabled>Reset everything</button>
+    </div>
+  </dialog>
+
+  <dialog id="delete-dialog">
+    <div class="dialog-icon">🗑</div>
+    <h2>Delete this event permanently?</h2>
+    <p>All associated profiles, photos, sessions and assignments will be erased. This cannot be undone.</p>
+    <label class="confirm-label" for="delete-confirmation">Type <strong>DELETE</strong> to confirm</label>
+    <input id="delete-confirmation" autocomplete="off" placeholder="DELETE">
+    <div class="dialog-actions">
+      <button class="secondary-button" id="cancel-delete-button" type="button">Keep the event</button>
+      <button class="danger-button" id="confirm-delete-button" type="button" disabled>Delete permanently</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
