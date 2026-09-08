@@ -392,6 +392,44 @@ async function setParticipation(store, payload) {
   return { saved: true };
 }
 
+async function addParticipant(store, payload) {
+  const event = await requireAdmin(store, payload);
+  if (event.status !== "waiting") throw new ApiError("Participants cannot be added after the draw", 409);
+  if (event.participants.length >= MAX_PARTICIPANTS) throw new ApiError(`Events are limited to ${MAX_PARTICIPANTS} people`);
+  const name = cleanName(payload.name, 40);
+  if (!name) throw new ApiError("Enter a name");
+  if (event.participants.some((person) => person.name.toLowerCase() === name.toLowerCase())) {
+    throw new ApiError("That name is already on the list");
+  }
+  const participantId = token(12);
+  event.participants.push({ id: participantId, name, included: true });
+  await Promise.all([
+    store.setJSON(eventKey(event.id), event),
+    store.setJSON(participantKey(event.id, participantId), {
+      id: participantId,
+      name,
+      claimed: false,
+      preferences: []
+    })
+  ]);
+  return { added: true, participantId };
+}
+
+async function removeParticipant(store, payload) {
+  const event = await requireAdmin(store, payload);
+  if (event.status !== "waiting") throw new ApiError("Participants cannot be removed after the draw", 409);
+  const index = event.participants.findIndex((entry) => entry.id === payload.participantId);
+  if (index === -1) throw new ApiError("That participant is not in this event");
+  if (event.participants.length <= 3) throw new ApiError("An event needs at least 3 people");
+  event.participants.splice(index, 1);
+  event.exclusions = event.exclusions.filter((pair) => !pair.includes(payload.participantId));
+  await Promise.all([
+    store.setJSON(eventKey(event.id), event),
+    store.delete(participantKey(event.id, payload.participantId))
+  ]);
+  return { removed: true };
+}
+
 async function resetEvent(store, payload) {
   const event = await requireAdmin(store, payload);
   await Promise.all(event.participants.flatMap((person) => [
@@ -481,6 +519,8 @@ export default async (request) => {
       "update-preferences": updatePreferences,
       "admin-status": adminStatus,
       "set-participation": setParticipation,
+      "add-participant": addParticipant,
+      "remove-participant": removeParticipant,
       "reset-event": resetEvent,
       "delete-event": deleteEvent,
       "clear-all-events": clearAllEvents,
@@ -523,6 +563,8 @@ export const testing = {
     updatePreferences,
     adminStatus,
     setParticipation,
+    addParticipant,
+    removeParticipant,
     resetEvent,
     deleteEvent,
     clearAllEvents,

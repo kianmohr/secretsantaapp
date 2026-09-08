@@ -89,6 +89,10 @@
         <div class="progress-row"><span>Joined</span><strong><span id="claimed-count">0</span> / <span id="admin-total">0</span></strong></div>
         <div class="progress-track"><div class="progress-fill" id="claim-progress"></div></div>
         <div class="status-list" id="admin-status-list"></div>
+        <form class="name-form add-participant-form" id="add-participant-form">
+          <input id="add-participant-name" placeholder="Add another name" maxlength="40" autocomplete="off">
+          <button class="secondary-button" type="submit">Add</button>
+        </form>
         <p class="tiny-note opt-out-note">Someone dropped out? Exclude them before the draw. You can restore them while the event is still waiting.</p>
         <button class="primary-button draw-now-button" id="draw-now-button" type="button" disabled>Draw the names <span>✦</span></button>
         <p class="draw-note" id="draw-note">Everyone must join before the draw.</p>

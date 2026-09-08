@@ -1226,6 +1226,27 @@ dialog p {
   color: var(--forest);
 }
 
+.remove-participant-button {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  color: #9b8f82;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.remove-participant-button:hover {
+  color: var(--red);
+  background: #f8e9e6;
+}
+
+.add-participant-form {
+  margin: 18px 0 0;
+}
+
 .opt-out-note {
   margin: 16px 0 0;
   text-align: center;

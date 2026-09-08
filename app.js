@@ -196,9 +196,19 @@ async function loadAdmin() {
       toggle.setAttribute("aria-label", `${person.included ? "Exclude" : "Restore"} ${person.name}`);
       toggle.onclick = () => setParticipation(person.id, !person.included, toggle);
       item.append(toggle);
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "remove-participant-button";
+      remove.textContent = "×";
+      remove.setAttribute("aria-label", `Remove ${person.name} from this event`);
+      remove.onclick = () => removeParticipant(person.id, person.name, remove);
+      item.append(remove);
     }
     list.append(item);
   });
+
+  $("#add-participant-form").classList.toggle("hidden", data.event.status !== "waiting");
 
   const ready = data.includedCount >= 3 && data.claimedCount === data.includedCount && data.event.status === "waiting";
   $("#draw-now-button").disabled = !ready;
@@ -333,6 +343,42 @@ async function setParticipation(participantId, included, button) {
     button.disabled = false;
   }
 }
+
+async function removeParticipant(participantId, name, button) {
+  if (!confirm(`Remove ${name} from this event? This deletes their profile and can't be undone.`)) return;
+  button.disabled = true;
+  try {
+    await api("remove-participant", {
+      ...adminCredentials,
+      participantId
+    });
+    await loadAdmin();
+    notify(`${name} was removed from the event`);
+  } catch (error) {
+    notify(error.message);
+    button.disabled = false;
+  }
+}
+
+$("#add-participant-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const input = $("#add-participant-name");
+  const name = input.value.trim().replace(/\s+/g, " ");
+  if (!name) return;
+  const button = event.target.querySelector("button");
+  button.disabled = true;
+  try {
+    await api("add-participant", { ...adminCredentials, name });
+    input.value = "";
+    await loadAdmin();
+    notify(`${name} was added to the event`);
+  } catch (error) {
+    notify(error.message);
+  } finally {
+    button.disabled = false;
+    input.focus();
+  }
+});
 
 function showError(message) {
   $("#error-message").textContent = message;
