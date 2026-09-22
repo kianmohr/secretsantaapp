@@ -591,6 +591,7 @@ $("#login-form").addEventListener("submit", async (event) => {
 $("#refresh-button").onclick = () => loadParticipant().catch((error) => notify(error.message));
 $("#edit-preferences-form").addEventListener("submit", async (event) => {
   event.preventDefault();
+  const details = event.currentTarget.querySelector("details");
   const preferences = [...document.querySelectorAll(".edit-preference")].map((input) => input.value.trim());
   try {
     await api("update-preferences", {
@@ -609,7 +610,7 @@ $("#edit-preferences-form").addEventListener("submit", async (event) => {
     });
     editPhotoChanges = [undefined, undefined, undefined, undefined];
     notify("Preferences updated");
-    event.currentTarget.querySelector("details").open = false;
+    details.open = false;
   } catch (error) {
     notify(error.message);
   }
